@@ -279,7 +279,7 @@ def reformatter(
     for n in range(len(content)-1):
         try:
             # initial line is longer than new max, i.e., should be manual break
-            if (content[n][-1]['old_len'] > ncol):
+            if (preserve_breaks and (content[n][-1]['old_len'] > ncol)):
                 content[n][-1]['manual_break'] = True
             # check start of next line
             elif ((content[n+1][0][1] == '\n') # empty line
