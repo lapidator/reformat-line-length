@@ -231,6 +231,11 @@ def reformatter(
         else: # remove empty lines (whitespaces count as content!)
             content = [line for line in infile if line[:-1]]
     
+    # check last line for trailing new line character and add if not found
+    # this saves some special treatment of this line
+    if not content[-1][-1]=='\n':
+        content[-1] += '\n'
+    
     # save each line's length
     line_lengths = [len(line)-1 for line in content]
     # find longest line (not counting trailing whitespaces)
@@ -273,15 +278,18 @@ def reformatter(
     # mark linebreaks as either fixed or modifiable
     for n in range(len(content)-1):
         try:
+            # initial line is longer than new max, i.e., should be manual break
+            if (content[n][-1]['old_len'] > ncol):
+                content[n][-1]['manual_break'] = True
             # check start of next line
-            if ((content[n+1][0][1] == '\n') # empty line
-                or (not content[n+1][0][0] and not content[n+1][0][1]
-                    and ' ' in startchars) # whitespace & it is a startchar
-                or (not content[n+1][0][0] and content[n+1][0][1] in
-                    startchars) # lone breakchar, which is also a startchar
-                or (preserve_breaks and (content[n+1][0][2]
-                    + content[n][-1]['old_len'] <= max_len)) # next word ...
-                    # ... would still fit on current line
+            elif ((content[n+1][0][1] == '\n') # empty line
+                  or (not content[n+1][0][0] and not content[n+1][0][1]
+                      and ' ' in startchars) # whitespace & it is a startchar
+                  or (not content[n+1][0][0] and content[n+1][0][1] in
+                      startchars) # lone breakchar, which is also a startchar
+                  or (preserve_breaks and (content[n+1][0][2]
+                      + content[n][-1]['old_len'] <= ncol)) # next word ...
+                      # ... would still fit on current line
                 ):
                 content[n][-1]['manual_break'] = True
             # Separate the case of any other leading startchar from the other
